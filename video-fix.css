@@ -38,3 +38,99 @@
 .video-element, .video-wrapper, .video-container {
     position: relative !important;
 }
+
+/* Purple button styling */
+.btn-purple {
+    background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+    border: none;
+    color: white;
+}
+
+.btn-purple:hover {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    color: white;
+}
+
+/* Modern Full-Screen Countdown Overlay */
+.countdown-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.countdown-content {
+    text-align: center;
+    color: white;
+    position: relative;
+}
+
+.countdown-icon {
+    font-size: 4rem;
+    color: #dc3545;
+    margin-bottom: 2rem;
+    animation: pulse 1s infinite;
+}
+
+.countdown-number {
+    font-size: 12rem;
+    font-weight: bold;
+    color: #ffc107;
+    text-shadow: 0 0 30px rgba(255, 193, 7, 0.5);
+    margin: 0;
+    line-height: 1;
+    animation: countdownPulse 1s ease-in-out;
+}
+
+.countdown-text {
+    font-size: 1.5rem;
+    color: #fff;
+    margin-top: 1rem;
+    opacity: 0.8;
+}
+
+.countdown-progress-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.progress-ring {
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    transition: stroke-dashoffset 1s linear;
+}
+
+@keyframes countdownPulse {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

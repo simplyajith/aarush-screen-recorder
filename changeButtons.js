@@ -17,7 +17,7 @@ const colorMap = {
     blue: 'btn-primary',
     grey: 'btn-secondary',
     red: 'btn-danger',
-    purple: 'btn-primary', // reuse existing classes
+    purple: 'btn-purple', // custom purple button
     orange: 'btn-warning'
 };
 
