@@ -50,6 +50,12 @@ const getMicAndCamera = async(e)=>{
 try{
     // Try to get camera with optional audio fallback
     stream = await requestCameraWithOptionalAudio();
+
+    // Sync with StreamManager
+    if (typeof streamManager !== 'undefined') {
+        streamManager.setCameraStream(stream);
+    }
+
     getDevices();
 
     // Update status based on what we actually got
@@ -62,15 +68,27 @@ try{
 
     // Initial Button State after camera access:
     // Share: Blue
-    // Show Video: Green
-    // Stop Video: Grey (Not active yet) -> Wait, if camera is on, Stop should be Red?
+    // Show Video: Green (Enabled)
+    // Stop Video: Red (Enabled)
     // Change Size: Grey
     // Start Record: Green (Ready)
     // Stop Record: Grey (Disabled)
     // Play Record: Grey (Disabled)
     // Share Screen: Purple
     // Save Record: Grey (Disabled)
-    changeButtons(['blue','green','grey','grey','green','grey','grey','purple','grey']);
+    changeButtons(['blue','green','red','grey','green','grey','grey','purple','grey']);
+
+    // Explicitly enable Show/Stop Video buttons
+    const showVideoBtn = document.getElementById('show-video');
+    if (showVideoBtn) {
+        showVideoBtn.disabled = false;
+        showVideoBtn.classList.remove('disabled');
+    }
+    const stopVideoBtn = document.getElementById('stop-video');
+    if (stopVideoBtn) {
+        stopVideoBtn.disabled = false;
+        stopVideoBtn.classList.remove('disabled');
+    }
 
 }catch(ex){
     // Handle different types of permission errors
@@ -143,6 +161,10 @@ const requestCameraOnly = async () => {
             audio: false
         });
         console.log("Camera access granted");
+        // Sync with StreamManager
+        if (typeof streamManager !== 'undefined') {
+            streamManager.setCameraStream(cameraStream);
+        }
         return cameraStream;
     } catch (error) {
         console.error("Camera access denied:", error);
@@ -272,6 +294,19 @@ const stopVideo = e => {
     );
     // Reset buttons
     changeButtons(['blue','green','grey','grey','grey','grey','grey','purple','grey']);
+
+    // Disable Show/Stop Video buttons
+    const showVideoBtn = document.getElementById('show-video');
+    if (showVideoBtn) {
+        showVideoBtn.disabled = true;
+        showVideoBtn.classList.add('disabled');
+    }
+    const stopVideoBtn = document.getElementById('stop-video');
+    if (stopVideoBtn) {
+        stopVideoBtn.disabled = true;
+        stopVideoBtn.classList.add('disabled');
+    }
+
     // Update status indicators to show camera and mic are off
     updateStatusIndicators(false, false);
     // Show the placeholder when video is stopped
@@ -284,19 +319,6 @@ document.querySelector('#show-video').addEventListener('click',e =>showMyFeed(e)
 document.querySelector('#stop-video').addEventListener('click',e =>stopVideo(e));
 document.querySelector('#change-size').addEventListener('click',e =>changeVideoSize(e));
 
-// Test button clicks first
-document.querySelector('#start-record')?.addEventListener('click', () => {
-    console.log("START RECORDING BUTTON CLICKED - SIMPLE TEST");
-    console.log("Now calling actual startRecording function...");
-
-    if (typeof startRecording === 'function') {
-        startRecording();
-    } else {
-        console.error("startRecording function not available!");
-        alert("Recording function not available!");
-    }
-});
-
 // Check if recording functions exist before adding event listeners
 console.log("=== AARUSH SCREEN RECORDER DEBUG ===");
 console.log("Checking if recording functions are available...");
@@ -305,14 +327,6 @@ console.log("stopRecording exists:", typeof stopRecording);
 console.log("playRecording exists:", typeof playRecording);
 console.log("shareScreen exists:", typeof shareScreen);
 console.log("toggleScreenShareAudio exists:", typeof toggleScreenShareAudio);
-
-// Test button elements
-console.log("Checking button elements...");
-console.log("Start record button:", document.querySelector('#start-record'));
-console.log("Stop record button:", document.querySelector('#stop-record'));
-console.log("Play record button:", document.querySelector('#play-record'));
-console.log("Share screen button:", document.querySelector('#share-screen'));
-console.log("Screen audio toggle:", document.querySelector('#screen-audio-toggle'));
 
 if (typeof startRecording === 'function') {
     document.querySelector('#start-record').addEventListener('click',() => {

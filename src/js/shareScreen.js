@@ -2,7 +2,6 @@ let screenShareAudioEnabled = false;
 
 const shareScreen = async() => {
     console.log("Sharing my screen here")
-    // Share: Blue, Show: Green, Stop: Grey, Change: Grey, Start: Blue, StopRec: Grey, Play: Red, ShareScreen: Purple, Save: Grey
     changeButtons(['blue','green','grey','grey','blue','grey','red','purple','grey']);
 
     const options = {
@@ -17,6 +16,11 @@ const shareScreen = async() => {
     try {
         shareStream = await navigator.mediaDevices.getDisplayMedia(options);
         console.log("Screen sharing started with audio:", screenShareAudioEnabled);
+
+        // Sync with StreamManager
+        if (typeof streamManager !== 'undefined') {
+            streamManager.setScreenStream(shareStream);
+        }
 
         // Disable share screen button, enable stop sharing button
         const shareBtn = document.getElementById('share-screen');
@@ -74,15 +78,29 @@ const handleScreenShareEnded = () => {
 
 // Stop screen sharing function (Manual stop from App UI)
 const stopScreenSharing = () => {
-    // If called directly (e.g. button click), we should also check for recording
-    // But we need to avoid infinite loops if called from handleScreenShareEnded
+    console.log("Stopping screen sharing...");
 
-    // Check if tracks are still active to determine if this is a fresh stop request
-    const isSharing = shareStream && shareStream.active;
+    // Check if we are recording and need to stop it (if called manually)
+    if (typeof mediaRecorder !== 'undefined' && mediaRecorder && mediaRecorder.state === 'recording') {
+        console.log("Recording is active, stopping recording automatically.");
+        if (typeof stopRecording === 'function') {
+            stopRecording();
+            // Show toast notification
+            if (typeof showToast === 'function') {
+                showToast('recording-stopped-toast');
+            }
+        } else {
+            console.error("stopRecording function not found!");
+        }
+    }
 
     if (shareStream) {
         shareStream.getTracks().forEach(track => track.stop());
         shareStream = null;
+        // Sync with StreamManager
+        if (typeof streamManager !== 'undefined') {
+            streamManager.setScreenStream(null);
+        }
     }
 
     // Enable share screen button, disable/hide stop sharing button
@@ -106,7 +124,7 @@ const stopScreenSharing = () => {
         changeButtons(['grey','grey','grey','grey','grey','grey','grey','purple','grey']);
     }
 
-    console.log("Screen sharing stopped manually");
+    console.log("Screen sharing stopped.");
 }
 
 // Toggle screen share audio
