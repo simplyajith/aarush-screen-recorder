@@ -11,7 +11,7 @@ const constraints = {
 const updateStatusIndicators = (hasCamera, hasMic) => {
     const cameraStatus = document.getElementById('camera-status');
     const micStatus = document.getElementById('mic-status');
-    
+
     if (hasCamera) {
         cameraStatus.className = 'badge bg-success me-2';
         cameraStatus.innerHTML = '<i class="fas fa-video"></i> Camera On';
@@ -19,7 +19,7 @@ const updateStatusIndicators = (hasCamera, hasMic) => {
         cameraStatus.className = 'badge bg-danger me-2';
         cameraStatus.innerHTML = '<i class="fas fa-video-slash"></i> Camera Off';
     }
-    
+
     if (hasMic) {
         micStatus.className = 'badge bg-success';
         micStatus.innerHTML = '<i class="fas fa-microphone"></i> Mic On';
@@ -41,26 +41,26 @@ try{
     // Try to get camera with optional audio fallback
     stream = await requestCameraWithOptionalAudio();
     getDevices();
-    
+
     // Update status based on what we actually got
     updateStatusFromTracks(stream);
-    
+
     console.log("Media access completed successfully");
     console.log("Stream tracks:", stream.getTracks().length);
     console.log("Video tracks:", stream.getVideoTracks().length);
     console.log("Audio tracks:", stream.getAudioTracks().length);
-    
+
     changeButtons(['blue','green','grey','grey','grey','grey','grey','purple']);
 
 }catch(ex){
     // Handle different types of permission errors
     console.error("Media access error:", ex);
-    
+
     if (ex.name === 'NotAllowedError') {
         // User denied permission - try individual requests to see what's available
         let hasCamera = false;
         let hasMic = false;
-        
+
         // Try camera only
         try {
             await requestCameraOnly();
@@ -69,7 +69,7 @@ try{
         } catch (cameraError) {
             console.log("Camera completely denied or unavailable");
         }
-        
+
         // Try microphone only
         try {
             await requestMicrophoneOnly();
@@ -78,10 +78,10 @@ try{
         } catch (micError) {
             console.log("Microphone completely denied or unavailable");
         }
-        
+
         // Update status based on what's actually available
         updateStatusIndicators(hasCamera, hasMic);
-        
+
         // Show appropriate message
         if (!hasCamera && !hasMic) {
             alert("Both camera and microphone permissions are required for full functionality.");
@@ -90,7 +90,7 @@ try{
         } else if (!hasMic) {
             alert("Microphone permission denied. You can still use video-only features.");
         }
-        
+
     } else if (ex.name === 'NotFoundError') {
         // No camera/microphone found
         console.log("No camera or microphone found");
@@ -107,7 +107,7 @@ try{
         updateStatusIndicators(false, false);
         alert("Failed to access camera or microphone: " + ex.message);
     }
-    
+
     // Set buttons to error state only if completely failed
     if (!stream) {
         changeButtons(['red','red','red','red','red','red','red','red']);
@@ -118,9 +118,9 @@ try{
 // Request only camera access
 const requestCameraOnly = async () => {
     try {
-        const cameraStream = await navigator.mediaDevices.getUserMedia({ 
-            video: true, 
-            audio: false 
+        const cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
         });
         console.log("Camera access granted");
         return cameraStream;
@@ -134,7 +134,7 @@ const requestCameraOnly = async () => {
 const requestMicrophoneOnly = async () => {
     try {
         const constraints = {
-            video: false, 
+            video: false,
             audio: {
                 echoCancellation: true,
                 noiseSuppression: true,
@@ -147,7 +147,7 @@ const requestMicrophoneOnly = async () => {
                 googHighpassFilter: true
             }
         };
-        
+
         const micStream = await navigator.mediaDevices.getUserMedia(constraints);
         console.log("Optimized microphone access granted");
         return micStream;
@@ -161,9 +161,9 @@ const requestMicrophoneOnly = async () => {
 const requestCameraWithOptionalAudio = async () => {
     try {
         // Try to get both first
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: true, 
-            audio: true 
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
         });
         console.log("Camera and microphone access granted");
         return stream;
@@ -184,7 +184,7 @@ const requestCameraWithOptionalAudio = async () => {
 const updateAudioQualityIndicator = (hasOptimizedAudio) => {
     const audioQualityEl = document.getElementById('audio-quality');
     const audioQualityText = document.getElementById('audio-quality-text');
-    
+
     if (audioQualityEl && audioQualityText) {
         if (hasOptimizedAudio) {
             audioQualityEl.style.display = 'inline-block';
@@ -205,15 +205,15 @@ const updateStatusFromTracks = (stream) => {
         updateAudioQualityIndicator(false);
         return;
     }
-    
+
     const videoTracks = stream.getVideoTracks();
     const audioTracks = stream.getAudioTracks();
-    
+
     const hasCamera = videoTracks.length > 0 && videoTracks[0].enabled;
     const hasMic = audioTracks.length > 0 && audioTracks[0].enabled;
-    
+
     updateStatusIndicators(hasCamera, hasMic);
-    
+
     // Check if audio has optimization features
     if (hasMic && audioTracks[0].getSettings) {
         const settings = audioTracks[0].getSettings();
@@ -266,7 +266,7 @@ document.querySelector('#change-size').addEventListener('click',e =>changeVideoS
 document.querySelector('#start-record')?.addEventListener('click', () => {
     console.log("START RECORDING BUTTON CLICKED - SIMPLE TEST");
     console.log("Now calling actual startRecording function...");
-    
+
     if (typeof startRecording === 'function') {
         startRecording();
     } else {
