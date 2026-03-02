@@ -74,30 +74,46 @@
     text-align: center;
     color: white;
     position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .countdown-icon {
-    font-size: 4rem;
+    font-size: 3rem;
     color: #dc3545;
     margin-bottom: 2rem;
     animation: pulse 1s infinite;
+    position: absolute;
+    top: 20%;
 }
 
 .countdown-number {
-    font-size: 12rem;
+    font-size: 8rem;
     font-weight: bold;
     color: #ffc107;
     text-shadow: 0 0 30px rgba(255, 193, 7, 0.5);
     margin: 0;
     line-height: 1;
     animation: countdownPulse 1s ease-in-out;
+
+    /* Center absolutely */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
 }
 
 .countdown-text {
     font-size: 1.5rem;
     color: #fff;
-    margin-top: 1rem;
     opacity: 0.8;
+    position: absolute;
+    bottom: 25%;
 }
 
 .countdown-progress-ring {
@@ -106,6 +122,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     pointer-events: none;
+    z-index: 1;
 }
 
 .progress-ring {
@@ -194,15 +211,15 @@
 
 @keyframes countdownPulse {
     0% {
-        transform: scale(0.5);
+        transform: translate(-50%, -50%) scale(0.5);
         opacity: 0;
     }
     50% {
-        transform: scale(1.1);
+        transform: translate(-50%, -50%) scale(1.1);
         opacity: 1;
     }
     100% {
-        transform: scale(1);
+        transform: translate(-50%, -50%) scale(1);
         opacity: 1;
     }
 }
