@@ -32,9 +32,9 @@ const shareScreen = async() => {
             stopBtn.disabled = false;
         }
 
-        // Add event listener for screen sharing end
+        // Add event listener for screen sharing end (browser UI stop button)
         shareStream.getVideoTracks()[0].addEventListener('ended', () => {
-            console.log("Screen sharing ended");
+            console.log("Screen sharing ended event triggered (Browser UI)");
             stopScreenSharing();
         });
 
@@ -51,8 +51,24 @@ const shareScreen = async() => {
     }
 }
 
-// Stop screen sharing function
+// Stop screen sharing function (Handles both manual and browser stop)
 const stopScreenSharing = () => {
+    console.log("Stopping screen sharing...");
+
+    // Check if we are recording and need to stop it
+    if (typeof mediaRecorder !== 'undefined' && mediaRecorder && mediaRecorder.state === 'recording') {
+        console.log("Recording is active, stopping recording automatically.");
+        if (typeof stopRecording === 'function') {
+            stopRecording();
+            // Show toast notification
+            if (typeof showToast === 'function') {
+                showToast('recording-stopped-toast');
+            }
+        } else {
+            console.error("stopRecording function not found!");
+        }
+    }
+
     if (shareStream) {
         shareStream.getTracks().forEach(track => track.stop());
         shareStream = null;
@@ -79,7 +95,7 @@ const stopScreenSharing = () => {
         changeButtons(['grey','grey','grey','grey','grey','grey','grey','purple']);
     }
 
-    console.log("Screen sharing stopped manually");
+    console.log("Screen sharing stopped.");
 }
 
 // Toggle screen share audio
