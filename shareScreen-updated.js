@@ -17,9 +17,20 @@ const shareScreen = async() => {
         shareStream = await navigator.mediaDevices.getDisplayMedia(options);
         console.log("Screen sharing started with audio:", screenShareAudioEnabled);
         
-        // Show stop sharing button, hide share screen button
-        document.getElementById('share-screen').style.display = 'none';
-        document.getElementById('stop-screen').style.display = 'block';
+        // Disable share screen button, enable stop sharing button
+        const shareBtn = document.getElementById('share-screen');
+        const stopBtn = document.getElementById('stop-screen');
+
+        if (shareBtn) {
+            shareBtn.disabled = true;
+            shareBtn.classList.add('disabled');
+            shareBtn.style.display = 'none'; // Hide it completely
+        }
+
+        if (stopBtn) {
+            stopBtn.style.display = 'block'; // Show stop button
+            stopBtn.disabled = false;
+        }
         
         // Add event listener for screen sharing end
         shareStream.getVideoTracks()[0].addEventListener('ended', () => {
@@ -29,6 +40,13 @@ const shareScreen = async() => {
         
     } catch(ex) {
         console.log("Error sharing screen:", ex);
+        // Re-enable button if sharing failed
+        const shareBtn = document.getElementById('share-screen');
+        if (shareBtn) {
+            shareBtn.disabled = false;
+            shareBtn.classList.remove('disabled');
+            shareBtn.style.display = 'block';
+        }
         alert("Failed to share screen: " + ex.message);
     }
 }
@@ -40,9 +58,19 @@ const stopScreenSharing = () => {
         shareStream = null;
     }
     
-    // Show share screen button, hide stop sharing button
-    document.getElementById('share-screen').style.display = 'block';
-    document.getElementById('stop-screen').style.display = 'none';
+    // Enable share screen button, disable/hide stop sharing button
+    const shareBtn = document.getElementById('share-screen');
+    const stopBtn = document.getElementById('stop-screen');
+
+    if (shareBtn) {
+        shareBtn.disabled = false;
+        shareBtn.classList.remove('disabled');
+        shareBtn.style.display = 'block';
+    }
+
+    if (stopBtn) {
+        stopBtn.style.display = 'none';
+    }
     
     // Reset buttons when screen sharing ends
     if (stream) {

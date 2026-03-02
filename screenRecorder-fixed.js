@@ -19,6 +19,13 @@ function startRecording() {
     const isScreenSharing = !!shareStream;
     console.log("Is screen sharing active:", isScreenSharing);
     
+    // Disable start recording button immediately
+    const startRecordBtn = document.getElementById('start-record');
+    if (startRecordBtn) {
+        startRecordBtn.disabled = true;
+        startRecordBtn.classList.add('disabled');
+    }
+
     if (isScreenSharing) {
         // Show 3-second countdown overlay for screen sharing
         console.log("Starting recording in 3 seconds...");
@@ -80,6 +87,12 @@ function actuallyStartRecording() {
         console.error("No stream available for recording");
         alert("No stream available for recording. Please start camera or screen sharing first.");
         changeButtons(['blue','green','grey','grey','grey','grey','grey','purple']);
+        // Re-enable start button on error
+        const startRecordBtn = document.getElementById('start-record');
+        if (startRecordBtn) {
+            startRecordBtn.disabled = false;
+            startRecordBtn.classList.remove('disabled');
+        }
         return;
     }
     
@@ -89,6 +102,12 @@ function actuallyStartRecording() {
         console.error("Stream has no tracks");
         alert("Stream has no audio/video tracks to record");
         changeButtons(['blue','green','grey','grey','grey','grey','grey','purple']);
+        // Re-enable start button on error
+        const startRecordBtn = document.getElementById('start-record');
+        if (startRecordBtn) {
+            startRecordBtn.disabled = false;
+            startRecordBtn.classList.remove('disabled');
+        }
         return;
     }
     
@@ -176,6 +195,13 @@ function actuallyStartRecording() {
             changeButtons(['blue','green','grey','grey','blue','purple','red','grey']);
             // Hide PIP overlay when recording stops
             hidePipAfterRecording();
+
+            // Re-enable start button when recording stops
+            const startRecordBtn = document.getElementById('start-record');
+            if (startRecordBtn) {
+                startRecordBtn.disabled = false;
+                startRecordBtn.classList.remove('disabled');
+            }
         };
         
         mediaRecorder.onerror = (event) => {
@@ -185,6 +211,13 @@ function actuallyStartRecording() {
             changeButtons(['blue','green','grey','grey','grey','grey','grey','purple']);
             // Hide PIP overlay on error
             hidePipAfterRecording();
+
+            // Re-enable start button on error
+            const startRecordBtn = document.getElementById('start-record');
+            if (startRecordBtn) {
+                startRecordBtn.disabled = false;
+                startRecordBtn.classList.remove('disabled');
+            }
         };
         
         // Start recording
@@ -199,6 +232,13 @@ function actuallyStartRecording() {
         changeButtons(['blue','green','grey','grey','grey','grey','grey','purple']);
         // Hide PIP overlay on error
         hidePipAfterRecording();
+
+        // Re-enable start button on error
+        const startRecordBtn = document.getElementById('start-record');
+        if (startRecordBtn) {
+            startRecordBtn.disabled = false;
+            startRecordBtn.classList.remove('disabled');
+        }
     }
 };
 
