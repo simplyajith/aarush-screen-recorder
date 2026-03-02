@@ -61,26 +61,28 @@ class PipCameraManager {
 
             // Set the camera stream to the video element
             this.pipVideo.srcObject = cameraStream;
-            // IMPORTANT: Don't mute for audio to work in PIP
-            this.pipVideo.muted = false;
+            // IMPORTANT: Mute video to allow autoplay
+            this.pipVideo.muted = true;
 
-            // Play the video first
-            this.pipVideo.play().then(() => {
-                return this.pipVideo.requestPictureInPicture();
-            }).then(pipWindow => {
-                this.pipWindow = pipWindow;
-                this.isUsingSystemPip = true;
-                this.isActive = true;
+            this.pipVideo.onloadedmetadata = () => {
+                // Play the video first
+                this.pipVideo.play().then(() => {
+                    return this.pipVideo.requestPictureInPicture();
+                }).then(pipWindow => {
+                    this.pipWindow = pipWindow;
+                    this.isUsingSystemPip = true;
+                    this.isActive = true;
 
-                // Handle PIP window events
-                pipWindow.addEventListener('resize', this.onPipResize.bind(this));
+                    // Handle PIP window events
+                    pipWindow.addEventListener('resize', this.onPipResize.bind(this));
 
-                console.log('System PIP window opened successfully with audio');
-                resolve();
-            }).catch(error => {
-                console.warn('System PIP failed:', error);
-                reject(error);
-            });
+                    console.log('System PIP window opened successfully');
+                    resolve();
+                }).catch(error => {
+                    console.warn('System PIP failed:', error);
+                    reject(error);
+                });
+            };
         });
     }
 
@@ -111,7 +113,7 @@ class PipCameraManager {
                         </style>
                     </head>
                     <body>
-                        <video id="pip-video" autoplay playsinline></video>
+                        <video id="pip-video" autoplay playsinline muted></video>
                     </body>
                     </html>
                 `);
@@ -120,17 +122,17 @@ class PipCameraManager {
 
                 // Set the camera stream to the popup's video element
                 const popupVideo = this.floatingWindow.document.getElementById('pip-video');
+                popupVideo.muted = true; // Ensure muted is set before srcObject
                 popupVideo.srcObject = cameraStream;
 
-                // IMPORTANT: Don't mute the video in PIP to allow audio
-                popupVideo.muted = false;
-
-                // Play the video with audio
-                popupVideo.play().then(() => {
-                    console.log('PIP video playing with audio');
-                }).catch(error => {
-                    console.warn('PIP video play failed:', error);
-                });
+                popupVideo.onloadedmetadata = () => {
+                    // Play the video with audio
+                    popupVideo.play().then(() => {
+                        console.log('PIP video playing');
+                    }).catch(error => {
+                        console.warn('PIP video play failed:', error);
+                    });
+                };
 
                 this.isUsingSystemPip = false;
                 this.isActive = true;
@@ -140,7 +142,7 @@ class PipCameraManager {
                     this.hide();
                 });
 
-                console.log('Floating window PIP opened successfully with audio');
+                console.log('Floating window PIP opened successfully');
                 resolve();
 
             } catch (error) {
@@ -154,18 +156,20 @@ class PipCameraManager {
     tryBrowserOverlay(cameraStream) {
         console.log('Using browser overlay PIP (fallback)');
         this.pipVideo.srcObject = cameraStream;
-        // IMPORTANT: Don't mute for audio to work
-        this.pipVideo.muted = false;
+        // IMPORTANT: Mute video to allow autoplay
+        this.pipVideo.muted = true;
         this.pipOverlay.classList.add('active');
         this.isUsingSystemPip = false;
         this.isActive = false; // Mark as not using advanced PIP
 
-        // Play the video with audio
-        this.pipVideo.play().then(() => {
-            console.log('Browser overlay video playing with audio');
-        }).catch(error => {
-            console.warn('Browser overlay video play failed:', error);
-        });
+        this.pipVideo.onloadedmetadata = () => {
+            // Play the video with audio
+            this.pipVideo.play().then(() => {
+                console.log('Browser overlay video playing');
+            }).catch(error => {
+                console.warn('Browser overlay video play failed:', error);
+            });
+        };
 
         // Reset to normal size when showing
         if (this.isMinimized) {

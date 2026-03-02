@@ -6,10 +6,11 @@ console.log("screenRecorder-fixed.js loaded - functions should be available");
 
 function startRecording() {
     console.log("=== START RECORDING CALLED ===");
-    console.log("Stream available:", !!stream);
-    console.log("Share stream available:", !!shareStream);
 
-    if(!stream && !shareStream){
+    // Check if we have media via StreamManager or globals
+    const hasMedia = (typeof streamManager !== 'undefined' && streamManager.hasMedia()) || (stream || shareStream);
+
+    if(!hasMedia){
         console.log("ERROR: No current feed available");
         alert("No current feed");
         return;
@@ -29,7 +30,6 @@ function startRecording() {
     if (isScreenSharing) {
         // Show 3-second countdown overlay for screen sharing
         console.log("Starting recording in 3 seconds...");
-        // Start: Grey, Stop: Red (Active)
         changeButtons(['blue','green','grey','grey','grey','red','grey','purple','grey']);
 
         // Show modern countdown overlay
@@ -78,17 +78,23 @@ function startRecording() {
 
 function actuallyStartRecording() {
     console.log("Attempting to start recording...");
-    console.log("Current stream:", stream);
-    console.log("Share stream:", shareStream);
 
-    // Determine which stream to record
-    const streamToRecord = shareStream || stream;
+    // Use StreamManager to get the correct stream
+    let streamToRecord;
+    if (typeof streamManager !== 'undefined') {
+        streamToRecord = streamManager.createRecordingStream();
+    } else {
+        // Fallback if StreamManager is missing
+        streamToRecord = shareStream || stream;
+    }
 
-    if (!streamToRecord) {
+    console.log("Stream to record:", streamToRecord);
+
+    if (!streamToRecord || streamToRecord.getTracks().length === 0) {
         console.error("No stream available for recording");
         alert("No stream available for recording. Please start camera or screen sharing first.");
         changeButtons(['blue','green','grey','grey','green','grey','grey','purple','grey']);
-        // Re-enable start button on error
+
         const startRecordBtn = document.getElementById('start-record');
         if (startRecordBtn) {
             startRecordBtn.disabled = false;
@@ -97,23 +103,8 @@ function actuallyStartRecording() {
         return;
     }
 
-    // Check if stream has tracks
-    const tracks = streamToRecord.getTracks();
-    if (tracks.length === 0) {
-        console.error("Stream has no tracks");
-        alert("Stream has no audio/video tracks to record");
-        changeButtons(['blue','green','grey','grey','green','grey','grey','purple','grey']);
-        // Re-enable start button on error
-        const startRecordBtn = document.getElementById('start-record');
-        if (startRecordBtn) {
-            startRecordBtn.disabled = false;
-            startRecordBtn.classList.remove('disabled');
-        }
-        return;
-    }
-
-    console.log("Recording stream with tracks:", tracks.length);
-    console.log("Track details:", tracks.map(t => ({ kind: t.kind, enabled: t.enabled, state: t.readyState })));
+    console.log("Recording stream with tracks:", streamToRecord.getTracks().length);
+    streamToRecord.getTracks().forEach(t => console.log("Track:", t.kind, t.label, t.readyState));
 
     // Show PIP camera overlay if recording screen sharing with camera
     if (shareStream && stream) {
@@ -124,14 +115,6 @@ function actuallyStartRecording() {
         // Stop any existing recorder
         if (mediaRecorder && mediaRecorder.state !== 'inactive') {
             mediaRecorder.stop();
-        }
-
-        // Create mixed stream for recording
-        let recordingStream = streamToRecord;
-
-        // If we have both screen share and camera, mix the audio
-        if (shareStream && stream) {
-            recordingStream = createMixedStream(shareStream, stream);
         }
 
         // Create new MediaRecorder with proper MIME type
@@ -160,7 +143,7 @@ function actuallyStartRecording() {
             options.mimeType = supportedMimeType;
         }
 
-        mediaRecorder = new MediaRecorder(recordingStream, options);
+        mediaRecorder = new MediaRecorder(streamToRecord, options);
         recordedBlobs = [];
 
         mediaRecorder.ondataavailable = event => {
@@ -172,21 +155,6 @@ function actuallyStartRecording() {
 
         mediaRecorder.onstart = () => {
             console.log("MediaRecorder started successfully");
-            console.log("Recording stream tracks:", recordingStream.getTracks().length);
-            console.log("Audio tracks:", recordingStream.getAudioTracks().length);
-            console.log("Video tracks:", recordingStream.getVideoTracks().length);
-
-            // Update user about what's being recorded
-            const audioTracks = recordingStream.getAudioTracks();
-            const videoTracks = recordingStream.getVideoTracks();
-
-            if (audioTracks.length === 0 && videoTracks.length > 0) {
-                console.log("Recording video only (no audio available)");
-            } else if (audioTracks.length > 0 && videoTracks.length === 0) {
-                console.log("Recording audio only (no video available)");
-            } else {
-                console.log("Recording video and audio");
-            }
 
             // Enable Stop button, Disable Start button
             // Start: Grey, Stop: Red
@@ -207,10 +175,13 @@ function actuallyStartRecording() {
 
         mediaRecorder.onstop = () => {
             console.log("MediaRecorder stopped");
+            console.log("Total recorded blobs:", recordedBlobs.length);
+
             // Reset buttons: Enable Start, Disable Stop, Enable Play/Save
             // Start: Green, Stop: Grey, Play: Blue, Save: Blue
             changeButtons(['blue','green','grey','grey','green','grey','blue','purple','blue']);
-            // Hide PIP overlay when recording stops
+
+            // Hide PIP overlay when recording stops (Standard behavior)
             hidePipAfterRecording();
 
             // Re-enable start button when recording stops
@@ -225,6 +196,18 @@ function actuallyStartRecording() {
             if (stopRecordBtn) {
                 stopRecordBtn.disabled = true;
                 stopRecordBtn.classList.add('disabled');
+            }
+
+            // Enable Play/Save buttons
+            const playRecordBtn = document.getElementById('play-record');
+            if (playRecordBtn) {
+                playRecordBtn.disabled = false;
+                playRecordBtn.classList.remove('disabled');
+            }
+            const saveRecordBtn = document.getElementById('save-record');
+            if (saveRecordBtn) {
+                saveRecordBtn.disabled = false;
+                saveRecordBtn.classList.remove('disabled');
             }
         };
 
@@ -271,117 +254,6 @@ function actuallyStartRecording() {
         }
     }
 };
-
-// Create a mixed stream that combines video from screen share and audio from both sources
-const createMixedStream = (screenStream, cameraStream) => {
-    console.log("Creating mixed stream for recording with echo cancellation");
-
-    // Create a new stream
-    const mixedStream = new MediaStream();
-
-    // Add video tracks from screen share
-    const screenVideoTracks = screenStream.getVideoTracks();
-    screenVideoTracks.forEach(track => {
-        console.log("Adding screen video track:", track.kind);
-        mixedStream.addTrack(track);
-    });
-
-    // Process audio tracks with echo cancellation
-    const screenAudioTracks = screenStream.getAudioTracks();
-    const cameraAudioTracks = cameraStream.getAudioTracks();
-
-    // Priority system for audio sources
-    if (screenAudioTracks.length > 0 && screenShareAudioEnabled) {
-        // Screen audio is enabled and available - use it primarily
-        console.log("Using screen audio as primary source");
-        screenAudioTracks.forEach(track => {
-            console.log("Adding screen audio track with echo cancellation");
-            mixedStream.addTrack(track);
-        });
-
-        // Add camera audio only if it has different constraints (for narration)
-        if (cameraAudioTracks.length > 0) {
-            console.log("Camera audio available but screen audio is primary");
-            // Don't add camera audio to prevent echo when screen audio is active
-        }
-
-    } else if (cameraAudioTracks.length > 0) {
-        // Only camera audio available - optimize it
-        console.log("Using camera audio with noise suppression");
-        cameraAudioTracks.forEach(track => {
-            console.log("Adding optimized camera audio track");
-            mixedStream.addTrack(track);
-        });
-    }
-
-    // If no audio tracks available, try to get optimized microphone
-    if (screenAudioTracks.length === 0 && cameraAudioTracks.length === 0) {
-        console.log("No audio tracks available, requesting optimized microphone");
-        requestOptimizedMicrophone()
-            .then(micStream => {
-                const micTracks = micStream.getAudioTracks();
-                micTracks.forEach(track => {
-                    console.log("Adding optimized microphone audio track");
-                    mixedStream.addTrack(track);
-                });
-                console.log("Optimized microphone added to mixed stream");
-            })
-            .catch(error => {
-                console.warn("Could not get optimized microphone:", error);
-            });
-    }
-
-    console.log("Mixed stream created with tracks:", mixedStream.getTracks().length);
-    console.log("Mixed stream audio tracks:", mixedStream.getAudioTracks().length);
-    console.log("Mixed stream video tracks:", mixedStream.getVideoTracks().length);
-
-    return mixedStream;
-};
-
-// Request optimized microphone with echo cancellation and noise suppression
-const requestOptimizedMicrophone = async () => {
-    try {
-        const constraints = {
-            audio: {
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true,
-                sampleRate: 44100,
-                channelCount: 1, // Mono for better clarity
-                latency: 0.01, // Low latency
-                googAutoGainControl: true,
-                googNoiseSuppression: true,
-                googEchoCancellation: true,
-                googHighpassFilter: true,
-                googAudioMirroring: false
-            },
-            video: false
-        };
-
-        console.log("Requesting optimized microphone with constraints:", constraints);
-        const micStream = await navigator.mediaDevices.getUserMedia(constraints);
-        console.log("Optimized microphone access granted");
-        return micStream;
-
-    } catch (error) {
-        console.warn("Optimized microphone failed, trying basic microphone:", error);
-
-        // Fallback to basic microphone
-        const basicConstraints = {
-            audio: {
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true
-            },
-            video: false
-        };
-
-        return await navigator.mediaDevices.getUserMedia(basicConstraints);
-    }
-};
-
-// Update the main camera request to use optimized audio
-// Note: This function is already defined in scripts.js, so we don't duplicate it here
 
 function stopRecording() {
     if(!mediaRecorder || mediaRecorder.state === 'inactive'){
