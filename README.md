@@ -1,10 +1,16 @@
 # 🎥 Aarush Screen Recorder: Professional Web-Based Capture Tool
 
+[![Live Demo](https://img.shields.io/badge/demo-vercel-black?logo=vercel)](https://aarushscreenrecorder.vercel.app/)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg)](https://buymeacoffee.com/aarushtech)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![JavaScript](https://img.shields.io/badge/javascript-vanilla-yellow.svg)
 ![Bootstrap](https://img.shields.io/badge/style-bootstrap-purple.svg)
 
 A comprehensive, zero-install screen recording application built with vanilla JavaScript. Record your screen, camera, and microphone with advanced features like Picture-in-Picture (PiP), multi-source audio mixing, and instant playback.
+
+## 🌐 Live Demo
+
+Try it out instantly: **[https://aarushscreenrecorder.vercel.app/](https://aarushscreenrecorder.vercel.app/)**
 
 ## 🚀 Key Features
 
@@ -29,7 +35,7 @@ The project is structured into modular JavaScript components:
 
 1.  **Clone the repository**:
     ```bash
-    git clone https://github.com/yourusername/aarush-screen-recorder.git
+    git clone https://github.com/simplyajith/aarush-screen-recorder.git
     ```
 2.  **Open `index.html`**:
     Simply open the file in a modern browser (Chrome, Edge, Firefox). No server or installation required!
@@ -39,6 +45,12 @@ The project is structured into modular JavaScript components:
 This application runs entirely in your browser. No data is sent to any server.
 *   **Camera/Mic**: Required only for recording your feed.
 *   **Screen Recording**: Required to capture your desktop content.
+
+## ☕ Support
+
+If you find this tool useful, consider buying me a coffee!
+
+<a href="https://buymeacoffee.com/aarushtech" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 ## 🤝 Contributing
 
