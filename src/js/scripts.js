@@ -36,6 +36,16 @@ const updateVideoPlaceholder = (showVideo) => {
         placeholder.style.display = showVideo ? 'none' : 'flex';
     }
 };
+
+// Show toast notification
+const showToast = (toastId) => {
+    const toastEl = document.getElementById(toastId);
+    if (toastEl) {
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
+};
+
 const getMicAndCamera = async(e)=>{
 try{
     // Try to get camera with optional audio fallback

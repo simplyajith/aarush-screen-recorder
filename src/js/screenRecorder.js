@@ -187,12 +187,26 @@ function actuallyStartRecording() {
                 console.log("Recording video and audio");
             }
 
-            changeButtons(['blue','green','grey','grey','green','red','grey','purple']);
+            // Enable Stop button, Disable Start button
+            changeButtons(['blue','green','grey','grey','grey','red','grey','purple']);
+
+            const startRecordBtn = document.getElementById('start-record');
+            if (startRecordBtn) {
+                startRecordBtn.disabled = true;
+                startRecordBtn.classList.add('disabled');
+            }
+
+            const stopRecordBtn = document.getElementById('stop-record');
+            if (stopRecordBtn) {
+                stopRecordBtn.disabled = false;
+                stopRecordBtn.classList.remove('disabled');
+            }
         };
 
         mediaRecorder.onstop = () => {
             console.log("MediaRecorder stopped");
-            changeButtons(['blue','green','grey','grey','blue','purple','red','grey']);
+            // Reset buttons: Enable Start, Disable Stop, Enable Play/Save
+            changeButtons(['blue','green','grey','grey','blue','grey','green','grey']);
             // Hide PIP overlay when recording stops
             hidePipAfterRecording();
 
@@ -202,13 +216,20 @@ function actuallyStartRecording() {
                 startRecordBtn.disabled = false;
                 startRecordBtn.classList.remove('disabled');
             }
+
+            // Disable stop button
+            const stopRecordBtn = document.getElementById('stop-record');
+            if (stopRecordBtn) {
+                stopRecordBtn.disabled = true;
+                stopRecordBtn.classList.add('disabled');
+            }
         };
 
         mediaRecorder.onerror = (event) => {
             console.error("MediaRecorder error:", event);
             console.error("Error details:", event.error);
             alert("Recording error: " + (event.error?.message || "Unknown error"));
-            changeButtons(['blue','green','grey','grey','grey','grey','grey','purple']);
+            changeButtons(['blue','green','grey','grey','blue','grey','grey','purple']);
             // Hide PIP overlay on error
             hidePipAfterRecording();
 
@@ -217,6 +238,12 @@ function actuallyStartRecording() {
             if (startRecordBtn) {
                 startRecordBtn.disabled = false;
                 startRecordBtn.classList.remove('disabled');
+            }
+
+            const stopRecordBtn = document.getElementById('stop-record');
+            if (stopRecordBtn) {
+                stopRecordBtn.disabled = true;
+                stopRecordBtn.classList.add('disabled');
             }
         };
 
@@ -229,7 +256,7 @@ function actuallyStartRecording() {
         console.error("Failed to start MediaRecorder:", error);
         console.error("Error details:", error.name, error.message);
         alert("Failed to start recording: " + error.message);
-        changeButtons(['blue','green','grey','grey','grey','grey','grey','purple']);
+        changeButtons(['blue','green','grey','grey','blue','grey','grey','purple']);
         // Hide PIP overlay on error
         hidePipAfterRecording();
 
@@ -354,14 +381,25 @@ const requestOptimizedMicrophone = async () => {
 // Note: This function is already defined in scripts.js, so we don't duplicate it here
 
 function stopRecording() {
-    if(!mediaRecorder){
-        alert("Please record before stopping");
+    if(!mediaRecorder || mediaRecorder.state === 'inactive'){
+        // If already stopped, just ensure buttons are correct
+        const startRecordBtn = document.getElementById('start-record');
+        const stopRecordBtn = document.getElementById('stop-record');
+
+        if (startRecordBtn) {
+            startRecordBtn.disabled = false;
+            startRecordBtn.classList.remove('disabled');
+        }
+        if (stopRecordBtn) {
+            stopRecordBtn.disabled = true;
+            stopRecordBtn.classList.add('disabled');
+        }
+
+        alert("Please start a recording before stopping");
         return;
     }
     console.log("Stopped Recording");
-    changeButtons(['blue','green','grey','grey','blue','purple','red','grey'])
     mediaRecorder.stop();
-
 }
 
 function playRecording() {
@@ -383,7 +421,7 @@ function playRecording() {
     }
 
     console.log("Playing Recording");
-    changeButtons(['blue','green','red','grey','green','green','red','grey'])
+    changeButtons(['blue','green','red','grey','green','grey','red','grey'])
     const superBuffer = new Blob(recordedBlobs, { type: 'video/webm' });
     console.log("Created blob with size:", superBuffer.size);
 
