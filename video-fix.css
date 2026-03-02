@@ -14,7 +14,9 @@
     align-items: center;
     justify-content: center;
     background: #000;
-    min-height: 350px;
+    min-height: 240px;
+    aspect-ratio: 21/9;
+    max-width: 100%;
 }
 
 .video-element {
@@ -22,6 +24,7 @@
     height: 100%;
     object-fit: contain;
     max-height: 100%;
+    border-radius: 8px;
 }
 
 /* Ensure videos don't overlap by using proper grid layout */

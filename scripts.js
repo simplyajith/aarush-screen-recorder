@@ -337,7 +337,26 @@ if (typeof playRecording === 'function') {
     });
 }
 
+if (typeof saveRecording === 'function') {
+    document.querySelector('#save-record').addEventListener('click',() => {
+        console.log("Save recording button clicked");
+        saveRecording();
+    });
+} else {
+    console.error("saveRecording function not found!");
+    // Add fallback listener
+    document.querySelector('#save-record')?.addEventListener('click', () => {
+        console.log("SAVE RECORDING BUTTON CLICKED - FALLBACK");
+        if (typeof saveRecording === 'function') {
+            saveRecording();
+        } else {
+            alert("Save recording function not available!");
+        }
+    });
+}
+
 document.querySelector('#share-screen').addEventListener('click',e =>shareScreen(e));
+document.querySelector('#stop-screen').addEventListener('click',e =>stopScreenSharing(e));
 document.querySelector('#screen-audio-toggle').addEventListener('click',e =>toggleScreenShareAudio(e));
 document.querySelector('#audio-input').addEventListener('change',e =>changeAudioInput(e));
 document.querySelector('#audio-output').addEventListener('change',e =>changeAudioOutput(e));
