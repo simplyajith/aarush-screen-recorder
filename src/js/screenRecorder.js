@@ -29,7 +29,8 @@ function startRecording() {
     if (isScreenSharing) {
         // Show 3-second countdown overlay for screen sharing
         console.log("Starting recording in 3 seconds...");
-        changeButtons(['blue','green','grey','grey','orange','red','grey','purple']);
+        // Start: Grey, Stop: Red (Active)
+        changeButtons(['blue','green','grey','grey','grey','red','grey','purple','grey']);
 
         // Show modern countdown overlay
         const overlay = document.getElementById('countdown-overlay');
@@ -86,7 +87,7 @@ function actuallyStartRecording() {
     if (!streamToRecord) {
         console.error("No stream available for recording");
         alert("No stream available for recording. Please start camera or screen sharing first.");
-        changeButtons(['blue','green','grey','grey','grey','grey','grey','purple']);
+        changeButtons(['blue','green','grey','grey','green','grey','grey','purple','grey']);
         // Re-enable start button on error
         const startRecordBtn = document.getElementById('start-record');
         if (startRecordBtn) {
@@ -101,7 +102,7 @@ function actuallyStartRecording() {
     if (tracks.length === 0) {
         console.error("Stream has no tracks");
         alert("Stream has no audio/video tracks to record");
-        changeButtons(['blue','green','grey','grey','grey','grey','grey','purple']);
+        changeButtons(['blue','green','grey','grey','green','grey','grey','purple','grey']);
         // Re-enable start button on error
         const startRecordBtn = document.getElementById('start-record');
         if (startRecordBtn) {
@@ -188,7 +189,8 @@ function actuallyStartRecording() {
             }
 
             // Enable Stop button, Disable Start button
-            changeButtons(['blue','green','grey','grey','grey','red','grey','purple']);
+            // Start: Grey, Stop: Red
+            changeButtons(['blue','green','grey','grey','grey','red','grey','purple','grey']);
 
             const startRecordBtn = document.getElementById('start-record');
             if (startRecordBtn) {
@@ -206,7 +208,8 @@ function actuallyStartRecording() {
         mediaRecorder.onstop = () => {
             console.log("MediaRecorder stopped");
             // Reset buttons: Enable Start, Disable Stop, Enable Play/Save
-            changeButtons(['blue','green','grey','grey','blue','grey','green','grey']);
+            // Start: Green, Stop: Grey, Play: Blue, Save: Blue
+            changeButtons(['blue','green','grey','grey','green','grey','blue','purple','blue']);
             // Hide PIP overlay when recording stops
             hidePipAfterRecording();
 
@@ -229,7 +232,7 @@ function actuallyStartRecording() {
             console.error("MediaRecorder error:", event);
             console.error("Error details:", event.error);
             alert("Recording error: " + (event.error?.message || "Unknown error"));
-            changeButtons(['blue','green','grey','grey','blue','grey','grey','purple']);
+            changeButtons(['blue','green','grey','grey','green','grey','grey','purple','grey']);
             // Hide PIP overlay on error
             hidePipAfterRecording();
 
@@ -256,7 +259,7 @@ function actuallyStartRecording() {
         console.error("Failed to start MediaRecorder:", error);
         console.error("Error details:", error.name, error.message);
         alert("Failed to start recording: " + error.message);
-        changeButtons(['blue','green','grey','grey','blue','grey','grey','purple']);
+        changeButtons(['blue','green','grey','grey','green','grey','grey','purple','grey']);
         // Hide PIP overlay on error
         hidePipAfterRecording();
 
@@ -421,7 +424,7 @@ function playRecording() {
     }
 
     console.log("Playing Recording");
-    changeButtons(['blue','green','red','grey','green','grey','red','grey'])
+    changeButtons(['blue','green','red','grey','green','grey','red','purple','blue'])
     const superBuffer = new Blob(recordedBlobs, { type: 'video/webm' });
     console.log("Created blob with size:", superBuffer.size);
 
@@ -448,7 +451,7 @@ function playRecording() {
         alert("Failed to play recording: " + error.message);
     });
 
-    changeButtons(['blue','green','grey','grey','blue','grey','red','grey'])
+    changeButtons(['blue','green','grey','grey','green','grey','red','purple','blue'])
 }
 
 function saveRecording() {

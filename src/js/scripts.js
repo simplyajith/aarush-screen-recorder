@@ -60,7 +60,17 @@ try{
     console.log("Video tracks:", stream.getVideoTracks().length);
     console.log("Audio tracks:", stream.getAudioTracks().length);
 
-    changeButtons(['blue','green','grey','grey','grey','grey','grey','purple']);
+    // Initial Button State after camera access:
+    // Share: Blue
+    // Show Video: Green
+    // Stop Video: Grey (Not active yet) -> Wait, if camera is on, Stop should be Red?
+    // Change Size: Grey
+    // Start Record: Green (Ready)
+    // Stop Record: Grey (Disabled)
+    // Play Record: Grey (Disabled)
+    // Share Screen: Purple
+    // Save Record: Grey (Disabled)
+    changeButtons(['blue','green','grey','grey','green','grey','grey','purple','grey']);
 
 }catch(ex){
     // Handle different types of permission errors
@@ -120,7 +130,7 @@ try{
 
     // Set buttons to error state only if completely failed
     if (!stream) {
-        changeButtons(['red','red','red','red','red','red','red','red']);
+        changeButtons(['red','red','red','red','red','red','red','red','red']);
     }
 }
 };
@@ -243,7 +253,8 @@ const showMyFeed = e =>{
     videoEl.srcObject = stream;
     const tracks = stream.getTracks();
     console.log(tracks);
-    changeButtons(['blue','green','green','green','green','grey','grey','purple']);
+    // Share: Blue, Show: Green, Stop: Red (Active), Change: Grey, Start: Green, StopRec: Grey, Play: Grey, ShareScreen: Purple, Save: Grey
+    changeButtons(['blue','green','red','grey','green','grey','grey','purple','grey']);
     // Hide the placeholder when video is active
     updateVideoPlaceholder(true);
 };
@@ -259,7 +270,8 @@ const stopVideo = e => {
 //    track => console.log(track)
     track => track.stop()
     );
-    changeButtons(['grey','grey','grey','grey','grey','grey','grey','purple']);
+    // Reset buttons
+    changeButtons(['blue','green','grey','grey','grey','grey','grey','purple','grey']);
     // Update status indicators to show camera and mic are off
     updateStatusIndicators(false, false);
     // Show the placeholder when video is stopped
