@@ -372,3 +372,59 @@ function playRecording() {
     
     changeButtons(['blue','green','grey','grey','blue','grey','red','grey'])
 }
+
+function saveRecording() {
+    console.log("=== SAVE RECORDING CALLED ===");
+    console.log("Recorded blobs available:", !!recordedBlobs);
+    console.log("Recorded blobs length:", recordedBlobs ? recordedBlobs.length : 0);
+    
+    if(!recordedBlobs){
+        console.log("ERROR: No recording saved");
+        alert("No recording to save. Please record something first.");
+        return;
+    }
+    
+    if (recordedBlobs.length === 0) {
+        console.log("ERROR: Recording is empty");
+        alert("Recording is empty. Nothing to save.");
+        return;
+    }
+    
+    console.log("Saving Recording...");
+    
+    // Create blob with proper MIME type
+    const superBuffer = new Blob(recordedBlobs, { type: 'video/webm' });
+    console.log("Created blob with size:", superBuffer.size);
+    
+    // Create download URL
+    const url = URL.createObjectURL(superBuffer);
+    
+    // Generate filename with timestamp
+    const now = new Date();
+    const timestamp = now.getFullYear() + 
+                    String(now.getMonth() + 1).padStart(2, '0') + 
+                    String(now.getDate()).padStart(2, '0') + '_' +
+                    String(now.getHours()).padStart(2, '0') + 
+                    String(now.getMinutes()).padStart(2, '0') + 
+                    String(now.getSeconds()).padStart(2, '0');
+    
+    const filename = `Aarush_Screen_Recording_${timestamp}.webm`;
+    
+    // Create temporary download link
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    
+    // Trigger download
+    document.body.appendChild(a);
+    a.click();
+    
+    // Cleanup
+    setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        console.log("Recording saved as:", filename);
+        alert(`Recording saved as: ${filename}`);
+    }, 100);
+}

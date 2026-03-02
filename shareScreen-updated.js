@@ -17,22 +17,41 @@ const shareScreen = async() => {
         shareStream = await navigator.mediaDevices.getDisplayMedia(options);
         console.log("Screen sharing started with audio:", screenShareAudioEnabled);
         
+        // Show stop sharing button, hide share screen button
+        document.getElementById('share-screen').style.display = 'none';
+        document.getElementById('stop-screen').style.display = 'block';
+        
         // Add event listener for screen sharing end
         shareStream.getVideoTracks()[0].addEventListener('ended', () => {
             console.log("Screen sharing ended");
-            shareStream = null;
-            // Reset buttons when screen sharing ends
-            if (stream) {
-                changeButtons(['blue','green','grey','grey','grey','grey','grey','purple']);
-            } else {
-                changeButtons(['grey','grey','grey','grey','grey','grey','grey','purple']);
-            }
+            stopScreenSharing();
         });
         
     } catch(ex) {
         console.log("Error sharing screen:", ex);
         alert("Failed to share screen: " + ex.message);
     }
+}
+
+// Stop screen sharing function
+const stopScreenSharing = () => {
+    if (shareStream) {
+        shareStream.getTracks().forEach(track => track.stop());
+        shareStream = null;
+    }
+    
+    // Show share screen button, hide stop sharing button
+    document.getElementById('share-screen').style.display = 'block';
+    document.getElementById('stop-screen').style.display = 'none';
+    
+    // Reset buttons when screen sharing ends
+    if (stream) {
+        changeButtons(['blue','green','grey','grey','grey','grey','grey','purple']);
+    } else {
+        changeButtons(['grey','grey','grey','grey','grey','grey','grey','purple']);
+    }
+    
+    console.log("Screen sharing stopped manually");
 }
 
 // Toggle screen share audio
