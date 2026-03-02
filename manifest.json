@@ -5,13 +5,13 @@
   "description": "A professional web-based screen recording tool.",
   "action": {
     "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+      "16": "src/assets/icons/icon16.png",
+      "48": "src/assets/icons/icon48.png",
+      "128": "src/assets/icons/icon128.png"
     }
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/js/background.js"
   },
   "permissions": [
     "activeTab",
@@ -22,7 +22,17 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["scripts.js", "styles.css", "video-fix.css", "pipCamera.js", "inputOutput.js", "shareScreen.js", "changeButtons.js", "screenRecorder.js", "changeVideoSize.js", "shareScreen-updated.js", "screenRecorder-fixed.js", "screenRecorder-updated.js"],
+      "resources": [
+        "src/js/scripts.js",
+        "src/css/styles.css",
+        "src/css/video-fix.css",
+        "src/js/pipCamera.js",
+        "src/js/inputOutput.js",
+        "src/js/shareScreen.js",
+        "src/js/changeButtons.js",
+        "src/js/screenRecorder.js",
+        "src/js/changeVideoSize.js"
+      ],
       "matches": ["<all_urls>"]
     }
   ]
