@@ -17,6 +17,7 @@
         .code-comment { color: #6ab04c; font-style: italic; }
         .explanation { background-color: #e8f4f8; padding: 1rem; border-radius: 6px; border-left: 4px solid #3498db; margin-bottom: 1rem; }
         .file-path { font-family: monospace; color: #e83e8c; background-color: #f8f9fa; padding: 0.2rem 0.4rem; border-radius: 4px; }
+        .badge-new { background-color: #27ae60; color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -32,7 +33,20 @@
     <h2>1. UI/UX Overhaul</h2>
     <p>We performed a major update to the user interface to create a more professional, consistent, and intuitive experience.</p>
 
-    <h3>1.1. Font & Header Redesign</h3>
+    <h3>1.1. Professional Polish (Latest Update) <span class="badge-new">New</span></h3>
+    <div class="explanation">
+        <strong>Goal:</strong> To elevate the UI from "functional" to "professional-grade" using modern design principles.
+    </div>
+    <ul>
+        <li><strong>Dark Mode Refinement:</strong> Changed the sidebar background to <code>#1f2937</code> (Tailwind Gray-800) to create better contrast with the main content area.</li>
+        <li><strong>Typography:</strong> Switched to the <strong>'Inter'</strong> font family for a cleaner, more modern look.</li>
+        <li><strong>Rounded Corners:</strong> Applied <code>12px</code> border-radius to video containers and cards for a softer feel.</li>
+        <li><strong>Status Chips:</strong> Redesigned status badges (Live, Waiting) to be pill-shaped with soft, translucent backgrounds (e.g., <code>rgba(16, 185, 129, 0.2)</code> for success).</li>
+        <li><strong>Button Interactions:</strong> Added hover states with slight brightness increase and lift effect (<code>transform: translateY(-1px)</code>).</li>
+        <li><strong>Spacing:</strong> Increased padding and margins between sections to reduce visual clutter.</li>
+    </ul>
+
+    <h3>1.2. Font & Header Redesign</h3>
     <div class="explanation">
         <strong>Goal:</strong> To modernize the look and feel. We imported the 'Inter' font from Google Fonts and applied it globally. The header was restyled with a gradient and highlight color to make it stand out.
     </div>
@@ -52,7 +66,7 @@ header h1 i {
     color: #3498db; <span class="code-comment">/* Highlight the video icon */</span>
 }</code></pre>
 
-    <h3>1.2. Button State Management</h3>
+    <h3>1.3. Button State Management</h3>
     <div class="explanation">
         <strong>Goal:</strong> Prevent users from clicking buttons that have no function in the current state (e.g., clicking "Stop Recording" before a recording has started).
     </div>
@@ -76,7 +90,7 @@ playRecordBtn.disabled = false; <span class="code-comment">// Enable the "Play" 
 const saveRecordBtn = document.getElementById('save-record');
 saveRecordBtn.disabled = false; <span class="code-comment">// Enable the "Save" button</span></code></pre>
 
-    <h3>1.3. Placeholder Text Fix</h3>
+    <h3>1.4. Placeholder Text Fix</h3>
     <div class="explanation">
         <strong>Goal:</strong> Hide the "No recording available" message when a video is being played.
     </div>
