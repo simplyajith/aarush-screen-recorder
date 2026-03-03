@@ -29,11 +29,25 @@ const updateStatusIndicators = (hasCamera, hasMic) => {
     }
 };
 
-// Update video placeholder visibility
+// Update video placeholder visibility (Local Camera)
 const updateVideoPlaceholder = (showVideo) => {
     const placeholder = document.getElementById('my-video-placeholder');
     if (placeholder) {
         placeholder.style.display = showVideo ? 'none' : 'flex';
+    }
+};
+
+// Update remote/recording video placeholder visibility
+const updateRemoteVideoPlaceholder = (showVideo) => {
+    const placeholder = document.getElementById('other-video-placeholder');
+    const videoEl = document.getElementById('other-video');
+
+    if (placeholder) {
+        placeholder.style.display = showVideo ? 'none' : 'flex';
+    }
+
+    if (videoEl) {
+        videoEl.style.display = showVideo ? 'block' : 'none';
     }
 };
 

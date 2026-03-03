@@ -1,37 +1,17 @@
 // Picture-in-Picture Camera Overlay Management
 class PipCameraManager {
     constructor() {
-        this.pipOverlay = document.getElementById('pip-camera-overlay');
         this.pipVideo = document.getElementById('pip-camera-video');
-        this.toggleSizeBtn = document.getElementById('pip-toggle-size');
-        this.closeBtn = document.getElementById('pip-close');
-        this.isMinimized = false;
         this.isActive = false;
         this.pipWindow = null;
-        this.isUsingSystemPip = false;
-        this.floatingWindow = null;
 
-        this.initEventListeners();
+        // We don't need drag events or overlay elements anymore
+        // as we are strictly using System PIP
     }
 
     initEventListeners() {
-        // Toggle size button
-        this.toggleSizeBtn.addEventListener('click', () => {
-            this.toggleSize();
-        });
-
-        // Close button
-        this.closeBtn.addEventListener('click', () => {
-            this.hide();
-        });
-
-        // Handle page visibility changes
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden && this.isActive && !this.isUsingSystemPip) {
-                console.log('Page hidden, ensuring PIP is visible');
-                this.ensurePipVisibility();
-            }
-        });
+        // No specific listeners needed for System PIP initiation here
+        // as it's triggered by the recording logic
     }
 
     // Show PIP overlay with camera stream
@@ -41,18 +21,19 @@ class PipCameraManager {
             return;
         }
 
-        console.log('Showing PIP camera overlay');
+        console.log('Showing PIP camera overlay (System PIP)');
 
-        // Try different PIP methods in order of preference
         this.trySystemPip(cameraStream)
-            .catch(() => this.tryFloatingWindow(cameraStream))
-            .catch(() => this.tryBrowserOverlay(cameraStream));
+            .catch(error => {
+                console.error('Failed to start System PIP:', error);
+                // We no longer fallback to custom overlays
+            });
     }
 
     // Try system-level Picture-in-Picture
     async trySystemPip(cameraStream) {
         return new Promise((resolve, reject) => {
-            if (!this.supportsSystemPip()) {
+            if (!('pictureInPictureEnabled' in document)) {
                 reject('System PIP not supported');
                 return;
             }
@@ -70,11 +51,18 @@ class PipCameraManager {
                     return this.pipVideo.requestPictureInPicture();
                 }).then(pipWindow => {
                     this.pipWindow = pipWindow;
-                    this.isUsingSystemPip = true;
                     this.isActive = true;
 
                     // Handle PIP window events
-                    pipWindow.addEventListener('resize', this.onPipResize.bind(this));
+                    pipWindow.addEventListener('resize', (e) => {
+                        console.log('PIP window resized:', e.target.width, 'x', e.target.height);
+                    });
+
+                    pipWindow.addEventListener('pagehide', () => {
+                        this.isActive = false;
+                        this.pipWindow = null;
+                        console.log('PIP window closed by user');
+                    });
 
                     console.log('System PIP window opened successfully');
                     resolve();
@@ -86,194 +74,27 @@ class PipCameraManager {
         });
     }
 
-    // Try creating a floating window (popup)
-    async tryFloatingWindow(cameraStream) {
-        return new Promise((resolve, reject) => {
-            console.log('Attempting floating window PIP');
-
-            try {
-                // Create a new popup window
-                const features = 'width=300,height=225,top=100,left=100,toolbar=no,menubar=no,location=no,status=no';
-                this.floatingWindow = window.open('', 'CameraPIP', features);
-
-                if (!this.floatingWindow) {
-                    reject('Popup blocked');
-                    return;
-                }
-
-                // Write basic HTML to the popup with audio enabled
-                this.floatingWindow.document.write(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Camera</title>
-                        <style>
-                            body { margin: 0; padding: 0; background: #000; }
-                            video { width: 100%; height: 100%; object-fit: cover; }
-                        </style>
-                    </head>
-                    <body>
-                        <video id="pip-video" autoplay playsinline muted></video>
-                    </body>
-                    </html>
-                `);
-
-                this.floatingWindow.document.close();
-
-                // Set the camera stream to the popup's video element
-                const popupVideo = this.floatingWindow.document.getElementById('pip-video');
-                popupVideo.muted = true; // Ensure muted is set before srcObject
-                popupVideo.srcObject = cameraStream;
-
-                popupVideo.onloadedmetadata = () => {
-                    // Play the video with audio
-                    popupVideo.play().then(() => {
-                        console.log('PIP video playing');
-                    }).catch(error => {
-                        console.warn('PIP video play failed:', error);
-                    });
-                };
-
-                this.isUsingSystemPip = false;
-                this.isActive = true;
-
-                // Handle window close
-                this.floatingWindow.addEventListener('beforeunload', () => {
-                    this.hide();
-                });
-
-                console.log('Floating window PIP opened successfully');
-                resolve();
-
-            } catch (error) {
-                console.warn('Floating window failed:', error);
-                reject(error);
-            }
-        });
-    }
-
-    // Fallback to browser overlay
-    tryBrowserOverlay(cameraStream) {
-        console.log('Using browser overlay PIP (fallback)');
-        this.pipVideo.srcObject = cameraStream;
-        // IMPORTANT: Mute video to allow autoplay
-        this.pipVideo.muted = true;
-        this.pipOverlay.classList.add('active');
-        this.isUsingSystemPip = false;
-        this.isActive = false; // Mark as not using advanced PIP
-
-        this.pipVideo.onloadedmetadata = () => {
-            // Play the video with audio
-            this.pipVideo.play().then(() => {
-                console.log('Browser overlay video playing');
-            }).catch(error => {
-                console.warn('Browser overlay video play failed:', error);
-            });
-        };
-
-        // Reset to normal size when showing
-        if (this.isMinimized) {
-            this.toggleSize();
-        }
-    }
-
-    // Ensure PIP remains visible when page changes
-    ensurePipVisibility() {
-        if (this.floatingWindow && !this.floatingWindow.closed) {
-            // Bring floating window to front
-            this.floatingWindow.focus();
-        } else if (this.isUsingSystemPip && this.pipWindow) {
-            // System PIP should already be visible
-            console.log('System PIP should remain visible');
-        } else {
-            // Try to show browser overlay again
-            console.log('Attempting to restore browser overlay');
-            if (stream) {
-                this.showBrowserOverlay(stream);
-            }
-        }
-    }
-
-    // Check if browser supports Picture-in-Picture API
-    supportsSystemPip() {
-        return 'pictureInPictureEnabled' in document &&
-               this.pipVideo &&
-               typeof this.pipVideo.requestPictureInPicture === 'function';
+    // Check if PIP is currently active
+    isPipActive() {
+        return this.isActive;
     }
 
     // Hide PIP overlay
     async hide() {
         console.log('Hiding PIP camera overlay');
 
-        if (this.isUsingSystemPip && this.pipWindow) {
+        if (this.isActive && document.pictureInPictureElement) {
             try {
                 await document.exitPictureInPicture();
                 this.pipWindow = null;
+                this.isActive = false;
             } catch (error) {
                 console.warn('Error exiting system PIP:', error);
             }
-        } else if (this.floatingWindow && !this.floatingWindow.closed) {
-            this.floatingWindow.close();
-            this.floatingWindow = null;
-        } else {
-            // Hide browser overlay
-            this.pipOverlay.classList.remove('active');
         }
 
         this.pipVideo.srcObject = null;
         this.isActive = false;
-        this.isUsingSystemPip = false;
-    }
-
-    // Toggle between normal and minimized size (only for browser overlay)
-    toggleSize() {
-        if (this.isUsingSystemPip || this.floatingWindow) {
-            console.log('Size toggle not available for system/floating PIP');
-            return;
-        }
-
-        this.isMinimized = !this.isMinimized;
-
-        if (this.isMinimized) {
-            this.pipOverlay.classList.add('minimized');
-            this.toggleSizeBtn.innerHTML = '<i class="fas fa-expand"></i>';
-        } else {
-            this.pipOverlay.classList.remove('minimized');
-            this.toggleSizeBtn.innerHTML = '<i class="fas fa-compress"></i>';
-        }
-    }
-
-    // Handle PIP window resize events
-    onPipResize() {
-        console.log('PIP window resized:', this.pipWindow.width, 'x', this.pipWindow.height);
-    }
-
-    // Check if PIP is currently active
-    isPipActive() {
-        return this.isActive;
-    }
-
-    // Update PIP with new stream
-    updateStream(newStream) {
-        if (this.isActive && newStream) {
-            if (this.isUsingSystemPip) {
-                this.pipVideo.srcObject = newStream;
-            } else if (this.floatingWindow && !this.floatingWindow.closed) {
-                const popupVideo = this.floatingWindow.document.getElementById('pip-video');
-                if (popupVideo) {
-                    popupVideo.srcObject = newStream;
-                }
-            } else {
-                this.pipVideo.srcObject = newStream;
-            }
-        }
-    }
-
-    // Get PIP type for debugging
-    getPipType() {
-        if (this.isUsingSystemPip) return 'system';
-        if (this.floatingWindow) return 'floating';
-        return 'browser';
     }
 }
 
