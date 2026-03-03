@@ -315,6 +315,9 @@ function playRecording() {
     recordedVideoEl.src = videoUrl;
     recordedVideoEl.controls = true;
 
+    // Hide placeholder, show video
+    updateRemoteVideoPlaceholder(true);
+
     console.log("Setting video to play...");
     recordedVideoEl.play().then(() => {
         console.log("Video playback started successfully");
