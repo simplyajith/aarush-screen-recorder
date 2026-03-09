@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Explained: pipCamera.js</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; padding: 2rem; font-family: 'Segoe UI', sans-serif; line-height: 1.6; }
+        .container { max-width: 900px; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 1rem; }
+        h2 { color: #34495e; margin-top: 3rem; border-left: 5px solid #27ae60; padding-left: 1rem; }
+        .code-block { background: #2d3436; color: #ecf0f1; padding: 1.5rem; border-radius: 6px; font-family: monospace; margin-bottom: 1.5rem; position: relative; }
+        .line-number { color: #636e72; display: inline-block; width: 30px; user-select: none; border-right: 1px solid #636e72; margin-right: 10px; }
+        .explanation { background-color: #e8f5e9; padding: 1rem; border-radius: 6px; border-left: 4px solid #27ae60; margin-bottom: 2rem; }
+        .keyword { color: #ff7675; font-weight: bold; }
+        .variable { color: #74b9ff; }
+        .function { color: #55efc4; }
+        .string { color: #ffeaa7; }
+        .comment { color: #b2bec3; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1><i class="fas fa-code me-2"></i>Line-by-Line Guide: pipCamera.js</h1>
+    <p class="lead">Welcome! This guide breaks down the Picture-in-Picture (PIP) code into simple, bite-sized pieces. We'll learn how we create that floating video window.</p>
+
+    <div class="alert alert-success">
+        <strong>Concept:</strong> We are creating a "Manager" (a Class) that handles everything related to the floating video. Think of it as a remote control for the PIP window.
+    </div>
+
+    <h2>1. The Setup (Constructor)</h2>
+    <div class="code-block">
+        <div><span class="line-number">1</span><span class="keyword">class</span> <span class="function">PipCameraManager</span> {</div>
+        <div><span class="line-number">2</span>    <span class="function">constructor</span>() {</div>
+        <div><span class="line-number">3</span>        <span class="keyword">this</span>.<span class="variable">pipVideo</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">'pip-camera-video'</span>);</div>
+        <div><span class="line-number">4</span>        <span class="keyword">this</span>.<span class="variable">isActive</span> = <span class="keyword">false</span>;</div>
+        <div><span class="line-number">5</span>        <span class="keyword">this</span>.<span class="variable">pipWindow</span> = <span class="keyword">null</span>;</div>
+        <div><span class="line-number">6</span>    }</div>
+    </div>
+    <div class="explanation">
+        <p><strong>Line 1:</strong> We define a blueprint called <code>PipCameraManager</code>.</p>
+        <p><strong>Line 2:</strong> The <code>constructor</code> runs automatically when we create a new manager.</p>
+        <p><strong>Line 3:</strong> We find the hidden <code>&lt;video&gt;</code> tag in our HTML page and save it as <code>this.pipVideo</code> so we can use it later.</p>
+        <p><strong>Line 4:</strong> <code>isActive</code> is a flag (true/false) to track if the PIP is currently open.</p>
+        <p><strong>Line 5:</strong> <code>pipWindow</code> will hold the reference to the actual floating window once it opens.</p>
+    </div>
+
+    <h2>2. The "Show" Command</h2>
+    <div class="code-block">
+        <div><span class="line-number">15</span>    <span class="function">show</span>(<span class="variable">cameraStream</span>) {</div>
+        <div><span class="line-number">16</span>        <span class="keyword">if</span> (!<span class="variable">cameraStream</span>) {</div>
+        <div><span class="line-number">17</span>            <span class="variable">console</span>.<span class="function">warn</span>(<span class="string">'No camera stream...'</span>);</div>
+        <div><span class="line-number">18</span>            <span class="keyword">return</span>;</div>
+        <div><span class="line-number">19</span>        }</div>
+        <div><span class="line-number">22</span>        <span class="keyword">this</span>.<span class="function">trySystemPip</span>(<span class="variable">cameraStream</span>)</div>
+        <div><span class="line-number">23</span>            .<span class="function">catch</span>(<span class="variable">error</span> => { ... });</div>
+        <div><span class="line-number">27</span>    }</div>
+    </div>
+    <div class="explanation">
+        <p><strong>Line 15:</strong> This is the main button we press. We pass it the <code>cameraStream</code> (the video from your webcam).</p>
+        <p><strong>Line 16-19:</strong> Safety check! If there's no video, we stop immediately.</p>
+        <p><strong>Line 22:</strong> We call another function <code>trySystemPip</code> to do the heavy lifting. We use <code>.catch</code> to handle any errors if it fails.</p>
+    </div>
+
+    <h2>3. The Heavy Lifting (System PIP)</h2>
+    <div class="code-block">
+        <div><span class="line-number">30</span>    <span class="keyword">async</span> <span class="function">trySystemPip</span>(<span class="variable">cameraStream</span>) {</div>
+        <div><span class="line-number">31</span>        <span class="keyword">return</span> <span class="keyword">new</span> <span class="function">Promise</span>((<span class="function">resolve</span>, <span class="function">reject</span>) => {</div>
+        <div><span class="line-number">32</span>            <span class="keyword">if</span> (!(<span class="string">'pictureInPictureEnabled'</span> <span class="keyword">in</span> <span class="variable">document</span>)) {</div>
+        <div><span class="line-number">33</span>                <span class="function">reject</span>(<span class="string">'System PIP not supported'</span>);</div>
+        <div><span class="line-number">34</span>                <span class="keyword">return</span>;</div>
+        <div><span class="line-number">35</span>            }</div>
+    </div>
+    <div class="explanation">
+        <p><strong>Line 30:</strong> <code>async</code> means this function takes some time to finish (it's asynchronous).</p>
+        <p><strong>Line 31:</strong> We return a <code>Promise</code>. A Promise is like an IOU: "I promise to either succeed (resolve) or fail (reject) later."</p>
+        <p><strong>Line 32:</strong> We ask the browser: "Do you support Picture-in-Picture?" If not, we reject the promise.</p>
+    </div>
+
+    <div class="code-block">
+        <div><span class="line-number">39</span>            <span class="keyword">this</span>.<span class="variable">pipVideo</span>.<span class="variable">srcObject</span> = <span class="variable">cameraStream</span>;</div>
+        <div><span class="line-number">41</span>            <span class="keyword">this</span>.<span class="variable">pipVideo</span>.<span class="variable">muted</span> = <span class="keyword">true</span>;</div>
+    </div>
+    <div class="explanation">
+        <p><strong>Line 39:</strong> We plug the webcam stream into our hidden video player.</p>
+        <p><strong>Line 41:</strong> <strong>CRITICAL!</strong> We mute the video. Browsers strictly block videos from playing automatically if they have sound (to stop annoying ads). Since we want this to open automatically, we must mute it.</p>
+    </div>
+
+    <div class="code-block">
+        <div><span class="line-number">43</span>            <span class="keyword">this</span>.<span class="variable">pipVideo</span>.<span class="variable">onloadedmetadata</span> = () => {</div>
+        <div><span class="line-number">45</span>                <span class="keyword">this</span>.<span class="variable">pipVideo</span>.<span class="function">play</span>().<span class="function">then</span>(() => {</div>
+        <div><span class="line-number">46</span>                    <span class="keyword">return</span> <span class="keyword">this</span>.<span class="variable">pipVideo</span>.<span class="function">requestPictureInPicture</span>();</div>
+        <div><span class="line-number">47</span>                }).<span class="function">then</span>(<span class="variable">pipWindow</span> => {</div>
+        <div><span class="line-number">48</span>                    <span class="keyword">this</span>.<span class="variable">pipWindow</span> = <span class="variable">pipWindow</span>;</div>
+        <div><span class="line-number">49</span>                    <span class="keyword">this</span>.<span class="variable">isActive</span> = <span class="keyword">true</span>;</div>
+        <div><span class="line-number">59</span>                    <span class="function">resolve</span>();</div>
+        <div><span class="line-number">60</span>                })</div>
+    </div>
+    <div class="explanation">
+        <p><strong>Line 43:</strong> We wait for the video to load its "metadata" (like dimensions) so we know it's ready.</p>
+        <p><strong>Line 45:</strong> We tell the video to <code>play()</code>.</p>
+        <p><strong>Line 46:</strong> Once it's playing, we call the magic browser command: <code>requestPictureInPicture()</code>. This pops the video out!</p>
+        <p><strong>Line 48-49:</strong> We save the window reference and set our flag to true.</p>
+        <p><strong>Line 59:</strong> We tell the Promise "Success!" by calling <code>resolve()</code>.</p>
+    </div>
+
+    <h2>4. The "Hide" Command</h2>
+    <div class="code-block">
+        <div><span class="line-number">73</span>    <span class="keyword">async</span> <span class="function">hide</span>() {</div>
+        <div><span class="line-number">76</span>        <span class="keyword">if</span> (<span class="keyword">this</span>.<span class="variable">isActive</span> && <span class="variable">document</span>.<span class="variable">pictureInPictureElement</span>) {</div>
+        <div><span class="line-number">78</span>                <span class="keyword">await</span> <span class="variable">document</span>.<span class="function">exitPictureInPicture</span>();</div>
+        <div><span class="line-number">79</span>                <span class="keyword">this</span>.<span class="variable">pipWindow</span> = <span class="keyword">null</span>;</div>
+        <div><span class="line-number">80</span>                <span class="keyword">this</span>.<span class="variable">isActive</span> = <span class="keyword">false</span>;</div>
+        <div><span class="line-number">85</span>        }</div>
+        <div><span class="line-number">86</span>        <span class="keyword">this</span>.<span class="variable">pipVideo</span>.<span class="variable">srcObject</span> = <span class="keyword">null</span>;</div>
+        <div><span class="line-number">87</span>    }</div>
+    </div>
+    <div class="explanation">
+        <p><strong>Line 76:</strong> We check if PIP is active and if the browser thinks a PIP window is open.</p>
+        <p><strong>Line 78:</strong> We call <code>exitPictureInPicture()</code> to close the floating window.</p>
+        <p><strong>Line 86:</strong> We unplug the webcam stream from the video player to stop it completely.</p>
+    </div>
+
+</div>
+
+</body>
+</html>
